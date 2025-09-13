@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced AI Code Assistant</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Markdown & Syntax Highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Mermaid.js for Diagrams -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+        window.mermaid = mermaid;
+    </script>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class=" text-gray-200 flex flex-col items-center min-h-screen p-4">
+
+    <div class="w-full max-w-6xl main-container">
+        <div class="glass-bg rounded-xl shadow-2xl p-6 md:p-8 space-y-6">
+            <header class="text-center">
+                <h1 class="text-3xl md:text-4xl font-bold text-white">Advanced AI Code Assistant</h1>
+                <p class="text-gray-400 mt-2">Your intelligent partner for solving, debugging, and visualizing code.</p>
+            </header>
+            
+            <!-- Tabs -->
+            <div class="flex justify-center border-b border-gray-700">
+                <button id="tab-solve" class="tab-btn active px-4 py-2 text-lg font-medium">Solve</button>
+                <button id="tab-debug" class="tab-btn px-4 py-2 text-lg font-medium">Debug & Refactor</button>
+                <button id="tab-visualize" class="tab-btn px-4 py-2 text-lg font-medium">Visualize</button>
+            </div>
+
+            <main id="main-content" class="space-y-6">
+                <!-- Solve Tab Content -->
+                <div id="content-solve" class="space-y-4">
+                    <textarea id="solveInput" rows="4" class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., How to reverse a string in JavaScript?"></textarea>
+                </div>
+
+                <!-- Debug Tab Content (hidden by default) -->
+                <div id="content-debug" class="hidden space-y-4">
+                    <textarea id="debugCodeInput" rows="8" class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Paste your code with a bug or that needs refactoring here..."></textarea>
+                    <textarea id="debugInstructionInput" rows="2" class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Describe the problem or what you want to improve (e.g., 'This code throws an error' or 'Make this more efficient')."></textarea>
+                </div>
+                
+                <!-- Visualize Tab Content (hidden by default) -->
+                 <div id="content-visualize" class="hidden space-y-4">
+                    <textarea id="visualizeInput" rows="4" class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 'Create a flowchart for a user login process' or 'Design a database schema for a blog'"></textarea>
+                </div>
+
+                <!-- Smart Actions & Controls -->
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <button class="action-btn" data-action="explain">Explain Code</button>
+                    <button class="action-btn" data-action="comment">Add Comments</button>
+                    <button class="action-btn" data-action="test">Write Unit Tests</button>
+                    <div class="flex items-center space-x-2 text-sm">
+                        <input type="checkbox" id="searchToggle" class="h-4 w-4 rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500">
+                        <label for="searchToggle" class="text-gray-300">API Expert (Use Google Search)</label>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button id="generateBtn" class="btn-primary text-white font-bold py-3 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 ease-in-out flex items-center justify-center mx-auto min-w-[180px]">
+                        <span id="btn-text">Generate Solution</span>
+                        <div id="loader" class="hidden ml-3 border-t-transparent w-5 h-5 border-4 border-white border-solid rounded-full animate-spin"></div>
+                    </button>
+                </div>
+
+                <!-- Output Area -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+                    <!-- Main Solution -->
+                    <div class="lg:col-span-2">
+                        <h2 class="text-xl font-semibold text-white mb-2">Solution</h2>
+                        <div id="output-container" class="glass-bg rounded-lg min-h-[300px] p-4 solution-content relative">
+                            <div id="placeholder" class="text-gray-500 flex items-center justify-center h-full">Your solution will appear here...</div>
+                        </div>
+                         <div id="sources-container" class="mt-4 text-sm"></div>
+                         <div id="sandbox-container" class="mt-4 hidden">
+                            <h3 class="text-lg font-semibold mb-2">Live Sandbox</h3>
+                            <iframe id="sandbox-iframe" class="w-full h-64 rounded-lg border border-gray-700 bg-white"></iframe>
+                        </div>
+                    </div>
+                    <!-- Conversation History -->
+                    <div>
+                        <h2 class="text-xl font-semibold text-white mb-2">History</h2>
+                        <div id="history-container" class="glass-bg rounded-lg min-h-[300px] max-h-[600px] overflow-y-auto p-3 space-y-3 text-sm">
+                           <div class="text-gray-500 text-center p-4">Conversation history is empty.</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="messageBox" class="hidden fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg z-50"></div>
+
+    <!-- Custom JavaScript -->
+    <script src="js/script.js"></script>
+</body>
+</html>
