@@ -170,19 +170,73 @@ function addCodeToolbars() {
     });
 }
 
+// async function renderMermaidDiagrams() {
+//     const mermaidElements = elements.outputContainer.querySelectorAll('code.language-mermaid');
+//     if (mermaidElements.length === 0) return;
+
+//     for (const el of mermaidElements) {
+//         const code = el.innerText;
+//         const container = el.parentElement;
+//         container.innerHTML = `<div class="mermaid-diagram flex justify-center p-4">${code}</div>`;
+//         try {
+//             const { svg } = await window.mermaid.render(`mermaid-${Date.now()}`, code);
+//             container.innerHTML = svg;
+//         } catch (e) {
+//             container.innerHTML = `<div class="text-red-400">Failed to render diagram: ${e.message}</div>`;
+//             console.error("Mermaid render error:", e);
+//         }
+//     }
+// }
+// --- Output Rendering ---
+// --- Output Rendering ---
+
+function renderOutput(text, groundingMetadata) {
+    elements.outputContainer.innerHTML = marked.parse(text);
+    elements.outputContainer.classList.add('output-container');
+    
+    // 1. Render Mermaid diagrams FIRST to avoid conflicts with the syntax highlighter.
+    renderMermaidDiagrams();
+
+    // 2. Now, highlight all OTHER code blocks that remain.
+    elements.outputContainer.querySelectorAll('pre code:not(.language-mermaid)').forEach(hljs.highlightElement);
+    
+    // 3. Add copy/run toolbars to the code blocks.
+    addCodeToolbars();
+
+    // Render sources if available
+    if (groundingMetadata?.groundingAttributions?.length > 0) {
+        const sourcesHtml = groundingMetadata.groundingAttributions.map(attr => 
+            `<a href="${attr.web.uri}" target="_blank" class="inline-block bg-gray-700 text-blue-300 px-3 py-1 rounded-full mr-2 mb-2 hover:bg-gray-600 transition-colors">
+                Source: ${attr.web.title}
+            </a>`
+        ).join('');
+        elements.sourcesContainer.innerHTML = `<h3 class="text-lg font-semibold mb-2">Sources</h3>${sourcesHtml}`;
+    }
+}
+
+// Ensure this function is present in your file
 async function renderMermaidDiagrams() {
     const mermaidElements = elements.outputContainer.querySelectorAll('code.language-mermaid');
     if (mermaidElements.length === 0) return;
 
     for (const el of mermaidElements) {
         const code = el.innerText;
-        const container = el.parentElement;
-        container.innerHTML = `<div class="mermaid-diagram flex justify-center p-4">${code}</div>`;
+        const container = el.parentElement; // This is the <pre> tag
+        
+        // Create a temporary div for rendering to avoid breaking the layout
+        const mermaidContainer = document.createElement('div');
+        mermaidContainer.className = 'mermaid-diagram flex justify-center p-4';
+        mermaidContainer.textContent = code;
+        
+        // Replace the <pre> tag with our new container
+        container.parentNode.replaceChild(mermaidContainer, container);
+
         try {
+            // Render the diagram using the unique ID of the container
             const { svg } = await window.mermaid.render(`mermaid-${Date.now()}`, code);
-            container.innerHTML = svg;
+            mermaidContainer.innerHTML = svg;
         } catch (e) {
-            container.innerHTML = `<div class="text-red-400">Failed to render diagram: ${e.message}</div>`;
+            mermaidContainer.innerHTML = `<div class="text-red-400">Failed to render diagram: ${e.message}</div>`;
             console.error("Mermaid render error:", e);
         }
     }
